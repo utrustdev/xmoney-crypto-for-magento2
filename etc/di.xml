@@ -19,8 +19,8 @@
     <type name="Utrust\Payment\Gateway\Config">
         <arguments>
             <argument name="config"  xsi:type="array">
-                <item name="api_url" xsi:type="string">https://merchants.api.utrust.com/api</item>
-                <item name="api_url_sandbox" xsi:type="string">https://merchants.api.sandbox-utrust.com/api</item>
+                <item name="api_url" xsi:type="string">https://merchants.api.crypto.xmoney.com/api</item>
+                <item name="api_url_sandbox" xsi:type="string">https://merchants.api.sandbox.crypto.xmoney.com/api</item>
             </argument>
         </arguments>
     </type>

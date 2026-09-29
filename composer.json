@@ -1,15 +1,23 @@
 {
     "name": "utrust/module-payment",
-    "description": "Magento 2 module for Utrust payment gateway",
-    "version": "1.5.0",
+    "description": "Magento 2 module for xMoney Crypto payments",
+    "version": "1.6.0",
     "type": "magento2-module",
-    "license": "proprietary",
+    "license": "GPL-3.0-only",
     "authors": [
         {
-            "name": "Utrust Team",
-            "email": "team@utrust.com"
+            "name": "xMoney",
+            "email": "support@xmoney.com"
         }
     ],
+    "require": {
+        "php": ">=7.4",
+        "magento/framework": ">=102.0.0",
+        "magento/module-checkout": ">=100.3.0",
+        "magento/module-payment": ">=100.3.0",
+        "magento/module-quote": ">=101.1.0",
+        "magento/module-sales": ">=102.0.0"
+    },
     "autoload": {
         "psr-4": {
             "Utrust\\Payment\\": ""

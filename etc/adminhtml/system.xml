@@ -3,18 +3,9 @@
 	<system>
 		<section id="payment" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="1000" translate="label">
 			<group id="utrust" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="10" translate="label">
-                <label>Utrust</label>
+                <label>xMoney Crypto</label>
                 <comment><![CDATA[
-                	<table>
-                		<td style="display: inline-block; vertical-align: middle; margin: 0 20px 0 0px;">
-                			<a href="https://utrust.com">
-                    			<img src="https://assets.utrust.com/logo-kit/png/logo/no-background/business-blue/logo-business-color-no-bg@2x.png" style="padding-left: 2rem;" alt="Utrust" />
-                    		</a>
-                    	</td>
-                    	<td style="display: inline-block; vertical-align: middle; width: 50%;">
-		                    Accept crypto payments, easily.
-                    	</td>
-                   	</table>
+                	Accept crypto payments with xMoney. Shoppers are redirected to the xMoney payment page.
                 ]]></comment>
 				<field id="active" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="20" translate="label" type="select">
 					<label>Enabled</label>
@@ -25,7 +16,7 @@
 					<label>Checkout Flow</label>
 					<field id="flow" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
 						<label>Alternative</label>
-						<comment><![CDATA[Select <b>Yes</b> to Create Order on Magento when Payment is confirmed, <b>No</b> to Create Order on Magento when buyer is redirected to Utrust widget.]]></comment>
+						<comment><![CDATA[Select <b>Yes</b> to create the Magento order when payment is confirmed. Select <b>No</b> to create the Magento order when the shopper is redirected to xMoney.]]></comment>
 						<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 					</field>
 				</group>
@@ -33,12 +24,12 @@
 				<group id="credentials" showInDefault="1" showInStore="1" showInWebsite="1" sortOrder="30" translate="label">
 					<label>Credentials</label>
 					<comment><![CDATA[
-						You need an Utrust Merchant account to start accepting crypto payments on your Magento store.</br>
-						Please signup on 
-							<a href="https://merchants.sandbox-utrust.com" target="_blank">Test</a> 
-							and/or 
-							<a href="https://merchants.utrust.com" target="_blank">Live</a>
-						environment.
+						You need an xMoney Crypto merchant account.
+						Sign up on the
+							<a href="https://merchants.sandbox.crypto.xmoney.com" target="_blank">test</a>
+							or
+							<a href="https://merchants.crypto.xmoney.com" target="_blank">live</a>
+						dashboard, then generate Magento 2 credentials under Integrations.
 					]]></comment>
 					<field id="sandbox" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
 						<label>Test mode</label>

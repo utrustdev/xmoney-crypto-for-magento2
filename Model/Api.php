@@ -64,9 +64,24 @@ class Api
         }
         $data = $this->serializer->serialize($orderData);
 
-        $response = $this->request($data);
+        try {
+            $response = $this->request($data);
+            if ($response === '' || $response === null) {
+                return [
+                    'errors' => [
+                        ['detail' => 'Empty response from payment gateway'],
+                    ],
+                ];
+            }
 
-        return $this->serializer->unserialize($response);
+            return $this->serializer->unserialize($response);
+        } catch (\Exception $exception) {
+            return [
+                'errors' => [
+                    ['detail' => $exception->getMessage()],
+                ],
+            ];
+        }
     }
 
     /**

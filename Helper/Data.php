@@ -1,8 +1,50 @@
 <?php
 namespace Utrust\Payment\Helper;
 
+use Utrust\Payment\Model\WebhookSignature;
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
-{   
+{
+    /**
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var \Magento\Customer\Model\CustomerFactory
+     */
+    protected $customerFactory;
+
+    /**
+     * @var \Magento\Catalog\Api\ProductRepositoryInterface
+     */
+    protected $productRepository;
+
+    /**
+     * @var \Magento\Customer\Api\CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var \Magento\Quote\Model\QuoteFactory
+     */
+    protected $quote;
+
+    /**
+     * @var \Magento\Quote\Model\QuoteManagement
+     */
+    protected $quoteManagement;
+
+    /**
+     * @var \Magento\Sales\Model\Order\Email\Sender\OrderSender
+     */
+    protected $orderSender;
+
+    /**
+     * @var WebhookSignature
+     */
+    protected $webhookSignature;
+
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -11,7 +53,8 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepository,
         \Magento\Quote\Model\QuoteFactory $quote,
         \Magento\Quote\Model\QuoteManagement $quoteManagement,
-        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
+        WebhookSignature $webhookSignature
     ) {
         $this->storeManager = $storeManager;
         $this->customerFactory = $customerFactory;
@@ -20,6 +63,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $this->quote = $quote;
         $this->quoteManagement = $quoteManagement;
         $this->orderSender = $orderSender;
+        $this->webhookSignature = $webhookSignature;
         parent::__construct($context);
     }
 
@@ -181,29 +225,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getPayloadSignature($payload)
     {
-        unset($payload["signature"]);
-        $payload = $this->arrayFlatten($payload);
-        ksort($payload);
-        $msg = implode("", array_map(function ($v, $k) {
-            return $k . $v;
-        }, $payload, array_keys($payload)));
-        $secret = $this->getConfig('payment/utrust/credentials/webhook_secret');
-        $signed_message = hash_hmac("sha256", $msg, $secret);
-        return $signed_message;
-    }
-
-    protected function arrayFlatten(array $array, $parentKey = '')
-    {
-        $result = [];
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    $result[$key . $k] = $v;
-                }
-            } else {
-                $result[$key] = $value;
-            }
+        $secret = (string) $this->getConfig('payment/utrust/credentials/webhook_secret');
+        if ($secret === '' || !is_array($payload)) {
+            return '';
         }
-        return $result;
+
+        return $this->webhookSignature->sign($payload, $secret);
     }
 }
