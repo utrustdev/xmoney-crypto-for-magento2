@@ -2,117 +2,101 @@
 
 # xMoney Crypto for Magento 2
 
-Accept Bitcoin, Ethereum, eGLD, UTK Token, and other juicy cryptocurrencies directly on your online store and get settled in the currency of your choice.
+Accept Bitcoin, Ethereum, eGLD, UTK, and other cryptocurrencies on a Magento store. The shopper pays on the xMoney payment page. You settle in the currency you choose with xMoney.
 
-With xMoney Crypto Pay, grow your business by allowing your customers to enjoy a vast portfolio of fiat & crypto currencies when purchasing goods and services, with a zero-fee exchange rate.
+This repository is the Magento payment extension. It is the piece that connects your store checkout to [xMoney Crypto Pay](https://xmoney.com/crypto-pay). xMoney is a digital payments network powered by [MultiversX](https://multiversx.com/).
 
-Find out more at [xMoney.com/crypto-pay](https://xmoney.com/crypto-pay)
+## Who this is for
 
-xMoney is the world's digital payments network for all things money. Crypto-enabled & Fiat-ready, with a suite of solutions for anyone, anywhere. Powered by [MultiversX](https://multiversx.com/).
+**You run a Magento store.** Install the extension, connect your xMoney merchant account, and turn the payment method on. Start with the short checklist below, then follow the [store setup guide](docs/store_guide.md).
+
+**You are new to Magento.** Magento (Magento Open Source or Adobe Commerce) is the software that runs the store: catalog, cart, checkout, and the admin. Install Magento first, then install this extension. The [store setup guide](docs/store_guide.md) links the Magento installation docs and then the steps for this extension.
+
+**You are developing this extension.** Put this repository inside a local Magento store and work from the source. The [developer guide](docs/developer_guide.md) covers local install, the code map, both checkout flows, webhooks, logs, and tests.
+
+## How the extension works
+
+The extension adds a payment method named **xMoney Crypto – Pay with crypto**. At checkout the shopper selects it and continues to the xMoney payment page. xMoney tells the store what happened by calling a webhook on your Magento site. The extension checks the signature on that call, then invoices the order or cancels it.
+
+```mermaid
+flowchart LR
+  shopper[Shopper]
+  magento[MagentoCheckout]
+  extension[UtrustPayment]
+  xmoney[xMoneyPaymentPage]
+  dashboard[MerchantDashboard]
+  shopper --> magento
+  magento --> extension
+  extension -->|"POST /stores/orders"| xmoney
+  xmoney --> shopper
+  xmoney -->|"signed webhook"| extension
+  xmoney --> dashboard
+```
+
+Two timings are available in the admin under **Checkout Flow**. With **Alternative** set to **No**, Magento creates the order when the shopper places it, then sends that order to xMoney. With **Alternative** set to **Yes**, Magento creates the order when xMoney reports that the payment was detected. The [developer guide](docs/developer_guide.md) diagrams both paths, including payment received and payment cancelled.
+
+The clip below is an illustration of that handoff. It is a drawing of the steps, so the screens are labeled stand-ins for the live products.
+
+![Illustration of Magento checkout, the extension, the xMoney payment page, and the merchant dashboard](docs/images/how-the-pieces-work.gif)
+
+This second clip is a real Magento storefront using the Luma theme. It shows a shopper opening a product and adding it to the cart, which is the start of checkout before the payment step.
+
+![Shopper adding a product to the cart on a Magento Luma store](.github/images/checkout.gif)
 
 ## Requirements
 
-- xMoney Crypto Merchant account
-- Online store in Magento 2.4.x or 2.3.x
+- Magento Open Source 2.4.7-p10 on PHP 8.2 for the local sandbox in the [developer guide](docs/developer_guide.md). The package constraint is `magento/framework` 102 or newer and PHP 7.4 or newer. Use the PHP version your Magento release requires. See the [Magento system requirements](https://experienceleague.adobe.com/en/docs/commerce-operations/installation-guide/system-requirements).
+- An xMoney Crypto merchant account on the [sandbox dashboard](https://merchants.sandbox.crypto.xmoney.com/) for testing, or the [live dashboard](https://merchants.crypto.xmoney.com/) for real payments.
+- SSH access to the Magento server so you can run `bin/magento`.
 
-## Install and Update
+The store base currency must be one xMoney supports, or the payment method stays hidden at checkout. The [store setup guide](docs/store_guide.md) lists those currencies.
 
-### Install
+## Install at a glance
 
-You will need FTP and SSH access to install this module:
+**Store owners** download a release and copy it into the Magento code directory.
 
-1. Download our latest release zip file on the [releases page](https://github.com/utrustdev/xmoney-crypto-for-magento2/releases).
-2. Unzip the zip file in `app/code/Utrust/Payment`.
-3. Enable the module by running `bin/magento module:enable Utrust_Payment`
-4. Apply database updates by running `bin/magento setup:upgrade`
-5. Flush the cache by running `bin/magento cache:flush`
-6. Go to your Magento admin dashboard (it should be something like https://<your-store.com>/admin).
-7. If you go to _Stores -> Sales -> Payment Methods_ and _xMoney Crypto_ is there it's successfully installed!
+1. Download the latest zip from the [releases page](https://github.com/utrustdev/xmoney-crypto-for-magento2/releases).
+2. Unzip it to `app/code/Utrust/Payment` in your Magento root.
+3. From the Magento root, enable the module, apply updates, and flush the cache.
 
-** Note: In production please use the `--keep-generated` option **
-
-### Update
-
-You can always check our [releases page](https://github.com/utrustdev/xmoney-crypto-for-magento2/releases) for a new version. You can update by following the same instructions as installing.
-
-### Uninstall (without Composer)
-
-If [removing with Composer](https://devdocs.magento.com/guides/v2.3/install-gde/install/cli/install-cli-uninstall-mods.html) doesn't work (which is recommended), you can try to remove it manually:
-
-```
-bin/magento module:disable Utrust_Payment
+```bash
+bin/magento module:enable Utrust_Payment
 bin/magento setup:upgrade
-rm -rf app/code/Utrust
-bin/magento cache:clean
-bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
 ```
 
-## Setup
+On a production-mode store, run `bin/magento setup:upgrade --keep-generated`, then deploy static content so the checkout assets are published. The [store setup guide](docs/store_guide.md) has the full commands, the update steps, and uninstall.
 
-### On the xMoney side
+**Developers** work from this repository, placed at `app/code/Utrust/Payment` inside a local Magento store in [developer mode](https://experienceleague.adobe.com/en/docs/commerce-operations/configuration-guide/cli/set-mode). Commands are in the [developer guide](docs/developer_guide.md).
 
-1. Go to [xMoney Crypto merchant dashboard](https://merchants.crypto.xmoney.com/).
-2. Log in or sign up if you didn't yet.
-3. On the left sidebar choose _Integrations_.
-4. Select _Magento 2_ and click the button _Generate Credentials_.
-5. You will see now your `Api Key` and `Webhook Secret`, save them somewhere safe temporarily.
+If Magento itself is not installed yet, use Adobe’s [Composer installation guide](https://experienceleague.adobe.com/en/docs/commerce-operations/installation-guide/composer) or the Docker sandbox in the [developer guide](docs/developer_guide.md). That sandbox is Magento Open Source 2.4.7-p10 on PHP 8.2, using [Mark Shust's Docker setup](https://github.com/markshust/docker-magento#setup). Store Composer keys only in your local `auth.json`.
 
-   :warning: You will only be able to see the `Webhook Secret` once, after refreshing or changing page it will be no longer available to copy; if needed, you can always generate new credentials.
+## Connect xMoney to the store
 
-   :no_entry_sign: Don't share your credentials with anyone. They can use it to place orders **on your behalf**.
+1. Open the [sandbox dashboard](https://merchants.sandbox.crypto.xmoney.com/) or the [live dashboard](https://merchants.crypto.xmoney.com/).
+2. In the left sidebar, open **Integrations**, select **Magento 2**, and click **Generate Credentials**.
+3. Copy the **Api Key** and the **Webhook Secret**. The Webhook Secret is shown once. If you leave the page before copying it, generate credentials again. Keep both values private. Anyone with them can create orders for your store.
+4. In the Magento admin, open **Stores → Configuration → Sales → Payment Methods → xMoney Crypto**. Paste the key and secret, set **Test mode** to match the dashboard you used, set **Enabled** to **Yes**, and click **Save Config**.
 
-### On the Magento side
+**Test mode** Yes talks to the sandbox API and expects sandbox credentials. **Test mode** No talks to the live API and expects live credentials.
 
-1. Go to your Magento admin dashboard.
-2. Navigate to _Stores -> Configuration -> Sales -> Payment Methods -> xMoney Crypto_.
-3. Add your `Api Key` and `Webhook Secret` and click "Save Config" button on top.
-4. Done!
+Field-by-field setup, including the checkout flow choice, is in the [store setup guide](docs/store_guide.md).
 
-## Features
+## What the extension does
 
-:sparkles: These are the features already implemented and planned for the xMoney Crypto for Magento 2 plugin:
+- Creates an xMoney order and redirects the shopper to the xMoney payment page.
+- Accepts the webhook for a received payment, creates an invoice, and sets the Magento order to Processing.
+- Accepts the webhook for a cancelled payment and cancels the Magento order.
+- Refunds stay out of this release. On xMoney, a refund is a proposal the buyer accepts. A credit memo in Magento leaves the crypto payment unchanged.
 
-- [x] Creates Order and redirects to the xMoney payment page
-- [x] Receives and handles webhook payment received
-- [x] Receives and handles webhook payment cancelled
-- [ ] Starts a refund on xMoney when a credit memo is created in Magento. Not in this release: xMoney refunds are proposals the buyer must accept, so a Magento credit memo does not refund the crypto payment.
+## Help
 
-## Support
+Open a [GitHub issue](https://github.com/utrustdev/xmoney-crypto-for-magento2/issues/new) for the extension. For account questions, email [support@xmoney.com](mailto:support@xmoney.com).
 
-Feel free to reach [by opening an issue on GitHub](https://github.com/utrustdev/xmoney-crypto-for-magento2/issues/new) if you need any help with the xMoney Crypto for Magento 2 plugin.
-
-If you're having specific problems with your account, then please contact [support@xmoney.com](https://mailto:support@xmoney.com/).
-
-In both cases, our team will be happy to help :purple_heart:.
-
-## Contribute
-
-This plugin was initially written by a third-party contractor (Moisés Sequeira from [CloudInfo](https://cloudinfo.pt/)), and is now maintained by the xMoney development team.
-
-We have now opened it to the world so that the community using this plugin may have the chance of shaping its development.
-
-You can contribute by simply letting us know your suggestions or any problems that you find [by opening an issue on GitHub](https://github.com/utrustdev/xmoney-crypto-for-magento2/issues/new).
-
-You can also fork the repository on GitHub and open a pull request for the `master` branch with your missing features and/or bug fixes.
-Please make sure the new code follows the same style and conventions as already written code.
-Our team is eager to welcome new contributors into the mix :blush:.
-
-### Development
-
-If you want to get your hands dirty and make your own changes to the xMoney Crypto for Magento plugin, we recommend you to install it in a local Magento store (either directly on your computer or using a virtual host) so you can make the changes in a controlled environment.
-Alternatively, you can also do it in a Magento online store that you have for testing/staging.
-
-Once the plugin is installed in your store, the source code should be in `app/code/Utrust/Payment/`. All the changes there should be reflected live in the store (if it doesn't, go to _System -> Cache Management_ and flush the cache).
-If something goes wrong with the module, logs can be found in `var/log/utrust.log`.
-
-## Publishing
-
-For now only members of the xMoney development team can publish new versions of the xMoney Crypto for Magento 2 plugin.
-
-To publish a new version, simply follow [these instructions](https://github.com/utrustdev/xmoney-crypto-for-magento2/wiki/Publishing).
+To change the extension, read the [developer guide](docs/developer_guide.md). Suggestions and pull requests to `master` are welcome. Match the style of the code already in the repository.
 
 ## License
 
-The Xmoney Crypto for Magento 2 plugin is maintained with :purple_heart: by the xMoney development team, and is available to the public under the GNU GPLv3 license. Please see [LICENSE](https://github.com/utrustdev/xmoney-crypto-for-magento2/blob/master/LICENSE) for further details.
+The extension is maintained by the xMoney development team and is available under the GNU GPLv3 license. See [LICENSE](LICENSE).
 
 &copy; Utrust 2024
