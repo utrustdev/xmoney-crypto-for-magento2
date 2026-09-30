@@ -36,7 +36,7 @@ class Cancel extends \Magento\Framework\App\Action\Action
             $order = $this->checkoutSession->getLastRealOrder();
             if ($order) {
             $order->cancel()->setState(\Magento\Sales\Model\Order::STATE_CANCELED);
-            $order->addStatusToHistory($order->getStatus(), 'Utrust has canceled the payment (buyer clicked canceled button).');
+            $order->addStatusToHistory($order->getStatus(), 'xMoney payment was canceled by the shopper.');
             $order->save();
             $items = $order->getItemsCollection();
                 foreach ($items as $item) {
@@ -48,7 +48,10 @@ class Cancel extends \Magento\Framework\App\Action\Action
                 }
                 $this->cart->save();
             }
+            $this->messageManager->addNoticeMessage(
+                __('The crypto payment was canceled. Your cart has been restored.')
+            );
             $this->_redirect('checkout/cart');
-        }    
+        }
     }
 }

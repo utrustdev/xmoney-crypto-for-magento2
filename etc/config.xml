@@ -6,8 +6,8 @@
 				<active>0</active>
 				<model>Utrust\Payment\Model\Payment\Utrust</model>
 				<order_status>pending</order_status>
-				<title>Utrust – Pay with crypto</title>
-				<instructions>You will be redirected to the Utrust payment widget compatible with any major crypto wallets. It will allow you to pay for your purchase in a safe and seamless way using Bitcoin, Ethereum, Tether or a number of other currencies.</instructions>
+				<title>xMoney Crypto – Pay with crypto</title>
+				<instructions>You will be redirected to the xMoney payment page. You can pay with Bitcoin, Ethereum, Tether, or another supported cryptocurrency.</instructions>
 				<allowspecific>0</allowspecific>
 				<group>offline</group>
 				<currency>USD,EUR,GBP,ARS,AUD,BRL,CAD,CLP,CNY,CZK,DKK,DOP,HKD,HUF,INR,IDR,ILS,JPY,KRW,MYR,MXN,NZD,NOK,PKR,PHP,PLN,RON,RUB,SGD,ZAR,SEK,CHF,TWD,THB,AED</currency>

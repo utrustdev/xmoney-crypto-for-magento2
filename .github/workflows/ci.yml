@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install test tools
+        run: |
+          mkdir -p "${RUNNER_TEMP}/ci-tools"
+          composer init --working-dir="${RUNNER_TEMP}/ci-tools" --name=utrust/ci-tools --no-interaction
+          composer config --working-dir="${RUNNER_TEMP}/ci-tools" --no-plugins \
+            allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer require --working-dir="${RUNNER_TEMP}/ci-tools" --no-interaction \
+            phpunit/phpunit:^9.6 \
+            magento/magento-coding-standard:^31 \
+            dealerdirect/phpcodesniffer-composer-installer:^1.0
+
+      - name: PHPUnit
+        run: "${RUNNER_TEMP}/ci-tools/vendor/bin/phpunit" -c phpunit.xml.dist
+
+      - name: phpcs
+        run: >
+          "${RUNNER_TEMP}/ci-tools/vendor/bin/phpcs"
+          --standard=Magento2
+          --extensions=php,phtml
+          --error-severity=10
+          .
